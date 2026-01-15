@@ -470,15 +470,24 @@ static int setup_uploader(Uploader *u, const char *url, const char *state_file) 
         if (strchr(host, ':'))
                 u->url = strjoin(proto, url, "/upload");
         else {
-                char *t;
-                size_t x;
+                char *th , *s;
+                const char *bh = "";
+                size_t x , spe_idx;
 
-                t = strdupa_safe(url);
-                x = strlen(t);
-                while (x > 0 && t[x - 1] == '/')
-                        t[x - 1] = '\0';
+                th = strdupa_safe(url);
+                s = strchr(th, '/');
+                x = strlen(th);
 
-                u->url = strjoin(proto, t, ":" STRINGIFY(DEFAULT_PORT), "/upload");
+                while (x > 0 && th[x - 1] == '/')
+                        th[x - 1] = '\0';
+
+                if (s) {
+                        spe_idx = s-th;
+                        bh = strdupa_safe(th + spe_idx);
+                        th[spe_idx] = '\0';
+                }
+
+                u->url = strjoin(proto, th, ":" STRINGIFY(DEFAULT_PORT), bh, "/upload");
         }
         if (!u->url)
                 return log_oom();
